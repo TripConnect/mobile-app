@@ -1,6 +1,4 @@
-import 'dart:collection';
-
-import 'package:first_app/models/user.dart';
+import 'package:mobile_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 

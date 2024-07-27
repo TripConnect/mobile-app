@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:first_app/screens/LoginScreen.dart';
+import 'package:mobile_app/screens/LoginScreen.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 const graphqlServer = 'http://10.0.2.2:3107/graphql';
