@@ -1,65 +1,132 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+
+const signInMutation = """
+  mutation SignIn(\$username: String!, \$password: String!) {
+    signIn(username: \$username, password: \$password) {
+      userInfo {
+        id
+        displayName
+        avatar
+      }
+      token {
+        accessToken
+        refreshToken
+      }
+    }
+  }
+""";
+
 
 class LoginScreen extends StatefulWidget {
-  final bool isAdmin;
+  final Function(String token) onLoginSuccess;
 
-  const LoginScreen(this.isAdmin, {super.key});
+  const LoginScreen({super.key, required this.onLoginSuccess});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  late bool isAdmin;
-
-  @override
-  void initState() {
-    super.initState();
-    isAdmin = widget.isAdmin;
-  }
-
-  void _switchRole() {
-    setState(() {
-      isAdmin = !isAdmin;
-    });
-  }
-
-  String _getRoleString() {
-    return isAdmin ? "Admin" : "User";
-  }
+  final _formKey = GlobalKey<FormState>();
+  String _username = '';
+  String _password = '';
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.amber,
-        title: const Text("Sign in"),
+    final loginResp = useMutation(
+      MutationOptions(
+        document: gql(signInMutation),
+        variables: {
+          'username': _username,
+          'password': _password,
+        },
       ),
-      body: Center(
-          child: Text(
-            isAdmin ? "Admin login" : "User login",
-            style: const TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w400
+    );
+
+    if (loginResp.result.isLoading) {
+      return const CircularProgressIndicator();
+    }
+
+    dynamic loginData = loginResp.result.data;
+    print('loginData=$loginData');
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Login'), backgroundColor: Colors.amber),
+      body: Container(
+        color: Colors.black87,
+        height: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 300, horizontal: 50),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Colors.white
+            ),
+            height: 100,
+            child: Form(
+              key: _formKey,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: <Widget>[
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Username'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your username';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _username = value ?? '';
+                      },
+                    ),
+                    TextFormField(
+                      decoration: const InputDecoration(labelText: 'Password'),
+                      obscureText: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                      onSaved: (value) {
+                        _password = value ?? '';
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: TextButton(
+                        onPressed: () {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            _formKey.currentState?.save();
+                            // Replace this with your actual login logic
+                            const token = 'mock_token'; // Simulated token
+                            widget.onLoginSuccess(token);
+                            print('Email: $_username, Password: $_password');
+                          }
+                        },
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18.0),
+                          ),
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                        ),
+                        child: const Text('Login'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
+        ),
       ),
-      persistentFooterButtons: <Widget>[
-        OutlinedButton.icon(
-          onPressed: _switchRole,
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
-            textStyle: const TextStyle(fontSize: 20),
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.black,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            side: const BorderSide(color: Colors.red, width: 2.5)
-          ),
-          icon: const Icon(Icons.outbond),
-          label: Text("Leave ${_getRoleString()} role"),
-        )
-      ],
     );
   }
 }
