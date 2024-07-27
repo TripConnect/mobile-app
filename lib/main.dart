@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:first_app/screens/LoginScreen.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+const graphqlServer = 'http://10.0.2.2:3107/graphql';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initHiveForFlutter();
 
-  final HttpLink httpLink = HttpLink('https://api.github.com/graphql');
+  final HttpLink httpLink = HttpLink(graphqlServer);
 
   final AuthLink authLink = AuthLink(
     getToken: () async => '',
@@ -47,7 +49,7 @@ class Application extends StatelessWidget {
 }
 
 void updateClientWithToken(ValueNotifier<GraphQLClient> client, String token) {
-  final HttpLink httpLink = HttpLink('https://api.github.com/graphql');
+  final HttpLink httpLink = HttpLink(graphqlServer);
 
   final AuthLink authLink = AuthLink(
     getToken: () async => 'Bearer $token',

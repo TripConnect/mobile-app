@@ -1,9 +1,12 @@
+import 'dart:collection';
+
+import 'package:first_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 const signInMutation = """
   mutation SignIn(\$username: String!, \$password: String!) {
-    signIn(username: \$username, password: \$password) {
+    signin(username: \$username, password: \$password) {
       userInfo {
         id
         displayName
@@ -16,7 +19,6 @@ const signInMutation = """
     }
   }
 """;
-
 
 class LoginScreen extends StatefulWidget {
   final Function(String token) onLoginSuccess;
@@ -34,23 +36,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final loginResp = useMutation(
-      MutationOptions(
-        document: gql(signInMutation),
-        variables: {
-          'username': _username,
-          'password': _password,
-        },
-      ),
-    );
-
-    if (loginResp.result.isLoading) {
-      return const CircularProgressIndicator();
-    }
-
-    dynamic loginData = loginResp.result.data;
-    print('loginData=$loginData');
-
     return Scaffold(
       appBar: AppBar(title: const Text('Login'), backgroundColor: Colors.amber),
       body: Container(
@@ -61,7 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
-              color: Colors.white
+              color: Colors.white,
             ),
             height: 100,
             child: Form(
@@ -99,25 +84,40 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: TextButton(
-                        onPressed: () {
-                          if (_formKey.currentState?.validate() ?? false) {
-                            _formKey.currentState?.save();
-                            // Replace this with your actual login logic
-                            const token = 'mock_token'; // Simulated token
-                            widget.onLoginSuccess(token);
-                            print('Email: $_username, Password: $_password');
-                          }
-                        },
-                        style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18.0),
-                          ),
-                          backgroundColor: Colors.black,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                      child: Mutation(
+                        options: MutationOptions(
+                          document: gql(signInMutation),
+                          onCompleted: (dynamic resultData) {
+                            if(resultData != null) {
+                              final signInData = SignInResponse.fromJson(resultData['signin']);
+                              print(signInData.token.accessToken);
+                              widget.onLoginSuccess(signInData.token.accessToken);
+                            }
+                          },
+                          onError: (error) => print(error),
                         ),
-                        child: const Text('Login'),
+                        builder: (RunMutation runMutation, QueryResult? result) {
+                          return TextButton(
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                _formKey.currentState?.save();
+                                runMutation({
+                                  'username': _username,
+                                  'password': _password,
+                                });
+                              }
+                            },
+                            style: TextButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18.0),
+                              ),
+                              backgroundColor: Colors.black,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                            ),
+                            child: const Text('Login'),
+                          );
+                        },
                       ),
                     ),
                   ],
