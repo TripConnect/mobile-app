@@ -39,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         decoration: const BoxDecoration(
           color: Colors.white70,
@@ -89,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       onSaved: (value) {
                         _username = value ?? '';
                       },
-                      initialValue: "sadboy1999",
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
@@ -116,7 +116,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       onSaved: (value) {
                         _password = value ?? '';
                       },
-                      initialValue: "123456789",
                     ),
                     const SizedBox(height: 30),
                     Mutation(
