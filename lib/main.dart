@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/models/user.dart';
-import 'package:mobile_app/screens/LoginScreen.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mobile_app/screens/LoginScreen.dart';
 import 'package:mobile_app/screens/ProfileScreen.dart';
+import 'package:mobile_app/models/user.dart';
+import 'package:mobile_app/constants/common.dart';
 
-const graphqlServer = 'http://10.0.2.2:3107/graphql';
+const graphqlServer = '$baseURL/graphql';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +40,9 @@ class Application extends StatelessWidget {
     return GraphQLProvider(
       client: client,
       child: MaterialApp(
+        builder: (context, child) {
+          return SafeArea(child: child!);
+        },
         initialRoute: "/login",
         routes: {
           '/login': (context) => LoginScreen(

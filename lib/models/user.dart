@@ -1,3 +1,5 @@
+import 'package:mobile_app/constants/common.dart';
+
 class UserInfo {
   final String id;
   final String displayName;
@@ -13,8 +15,13 @@ class UserInfo {
     return UserInfo(
       id: json['id'],
       displayName: json['displayName'],
-      avatar: json['avatar'] ?? '',
+      avatar: (json['avatar'] ?? '').isEmpty ? defaultUserAvatar : json['avatar'],
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserInfo: id=$id displayName=$displayName avatar=$avatar';
   }
 }
 

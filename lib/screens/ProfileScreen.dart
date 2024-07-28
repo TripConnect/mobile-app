@@ -15,11 +15,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: <Widget>[
-          Image.network(widget.userInfo.avatar),
-          Text(widget.userInfo.displayName),
-        ],
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: <Widget>[
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 50, // Adjust the radius as needed
+                  backgroundImage: NetworkImage(widget.userInfo.avatar),
+                ),
+                const SizedBox(width: 30),
+                Text(
+                  widget.userInfo.displayName,
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w500
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
       ),
     );
   }
