@@ -40,7 +40,13 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Colors.white70,
+        decoration: const BoxDecoration(
+          color: Colors.white70,
+          image: DecorationImage(
+            image: AssetImage('assets/images/app-background.jpg'),
+            fit: BoxFit.cover, // Adjust as needed
+          ),
+        ),
         height: double.infinity,
         child: Padding(
           padding: const EdgeInsets.only(top: 150, left: 30, right: 30, bottom: 0),
@@ -124,13 +130,26 @@ class _LoginScreenState extends State<LoginScreen> {
                         );
                       },
                     ),
-                    const SizedBox(height: 35),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                              "Forgot password?",
+                              style: TextStyle(color: Colors.black54)
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
                     const Row(
                       children: [
                         Expanded(
                           child: Divider(
                             color: Colors.grey,
-                            thickness: 0.5,
+                            thickness: 0.6,
                           ),
                         ),
                         Padding(
@@ -140,7 +159,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Expanded(
                           child: Divider(
                             color: Colors.grey,
-                            thickness: 0.5,
+                            thickness: 0.6,
                           ),
                         ),
                       ],
@@ -149,13 +168,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     TextButton(
                       onPressed: _signInWithGoogle,
                       style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 35),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 35),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        backgroundColor: Colors.transparent,
-                        side: const BorderSide(width: 0.8, color: Colors.grey),
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(width: 0.8, color: Colors.black45),
                       ),
-                      child: Image.network(
-                        'https://image.similarpng.com/very-thumbnail/2020/06/Logo-google-icon-PNG.png',
+                      child: Image.asset(
+                        'assets/images/google-logo.png',
                         fit: BoxFit.contain,
                         width: 30,
                       ),
