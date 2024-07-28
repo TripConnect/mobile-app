@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderSide: const BorderSide(color: Colors.black, width: 0.5), // Optional border color
                         ),
                         focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.cyan, width: 1), // Focused border color
+                            borderSide: BorderSide(color: Colors.cyanAccent, width: 1), // Focused border color
                             borderRadius: BorderRadius.all(Radius.circular(8))
                         ),
                       ),
@@ -102,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           borderSide: const BorderSide(color: Colors.black, width: 0.5), // Optional border color
                         ),
                         focusedBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.cyan, width: 1), // Focused border color
+                            borderSide: BorderSide(color: Colors.cyanAccent, width: 1), // Focused border color
                             borderRadius: BorderRadius.all(Radius.circular(8))
                         ),
                       ),
@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Expanded(
                           child: Divider(
-                            color: Colors.grey,
+                            color: Colors.cyan,
                             thickness: 0.6,
                           ),
                         ),
@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Expanded(
                           child: Divider(
-                            color: Colors.grey,
+                            color: Colors.cyan,
                             thickness: 0.6,
                           ),
                         ),
