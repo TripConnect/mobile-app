@@ -32,28 +32,33 @@ class _LoginScreenState extends State<LoginScreen> {
   String _username = '';
   String _password = '';
 
+  _signInWithGoogle() {
+    print("Feature not implemented");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login'), backgroundColor: Colors.amber),
       body: Container(
-        color: Colors.black87,
+        color: Colors.white70,
         height: double.infinity,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 300, horizontal: 50),
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Colors.white,
-            ),
-            height: 100,
-            child: Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.only(top: 150, left: 30, right: 30, bottom: 0),
+          child: Column(
+            children: <Widget>[
+              const Text(
+                "Welcome back! Enter to enjoy you journey with everyone",
+                style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 25
+                ),
+              ),
+              const SizedBox(height: 30),
+              Form(
+                key: _formKey,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     TextFormField(
                       decoration: const InputDecoration(labelText: 'Username'),
@@ -80,22 +85,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         _password = value ?? '';
                       },
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      child: Mutation(
-                        options: MutationOptions(
-                          document: gql(signInMutation),
-                          onCompleted: (dynamic resultData) {
-                            if(resultData != null) {
-                              final signInData = SignInResponse.fromJson(resultData['signin']);
-                              print(signInData.token.accessToken);
-                              widget.onLoginSuccess(signInData.token.accessToken);
-                            }
-                          },
-                          onError: (error) => print(error),
-                        ),
-                        builder: (RunMutation runMutation, QueryResult? result) {
-                          return TextButton(
+                    const SizedBox(height: 30),
+                    Mutation(
+                      options: MutationOptions(
+                        document: gql(signInMutation),
+                        onCompleted: (dynamic resultData) {
+                          if(resultData != null) {
+                            final signInData = SignInResponse.fromJson(resultData['signin']);
+                            print(signInData.token.accessToken);
+                            widget.onLoginSuccess(signInData.token.accessToken);
+                          }
+                        },
+                        onError: (error) => print(error),
+                      ),
+                      builder: (RunMutation runMutation, QueryResult? result) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: TextButton(
                             onPressed: () {
                               if (_formKey.currentState?.validate() ?? false) {
                                 _formKey.currentState?.save();
@@ -107,21 +113,69 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             style: TextButton.styleFrom(
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18.0),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                               backgroundColor: Colors.black,
                               foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
+                              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
                             ),
                             child: const Text('Login'),
-                          );
-                        },
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 35),
+                    const Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: Colors.grey,
+                            thickness: 0.5,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('Or sign in with'),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: Colors.grey,
+                            thickness: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 35),
+                    TextButton(
+                      onPressed: _signInWithGoogle,
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 35),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        backgroundColor: Colors.transparent,
+                        side: const BorderSide(width: 0.8, color: Colors.grey),
                       ),
+                      child: Image.network(
+                        'https://image.similarpng.com/very-thumbnail/2020/06/Logo-google-icon-PNG.png',
+                        fit: BoxFit.contain,
+                        width: 30,
+                      ),
+                    ),
+                    const SizedBox(height: 220),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const Text("Don't have an account?"),
+                        TextButton(
+                            onPressed: (){},
+                            child: const Text("Register now", style: TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
+                        )
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
+            ]
           ),
         ),
       ),
