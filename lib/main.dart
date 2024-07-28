@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app/models/user.dart';
 import 'package:mobile_app/screens/LoginScreen.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mobile_app/screens/ProfileScreen.dart';
 
 const graphqlServer = 'http://10.0.2.2:3107/graphql';
 
@@ -28,31 +30,48 @@ void main() async {
 
 class Application extends StatelessWidget {
   final ValueNotifier<GraphQLClient> client;
+  late UserInfo _userInfo;
 
-  const Application({super.key, required this.client});
+  Application({super.key, required this.client});
 
   @override
   Widget build(BuildContext context) {
     return GraphQLProvider(
       client: client,
       child: MaterialApp(
-        home: SafeArea(
-          child: LoginScreen(
-            onLoginSuccess: (token) {
-              updateClientWithToken(client, token);
-            },
+        initialRoute: "/login",
+        routes: {
+          '/login': (context) => LoginScreen(
+              onSignInSuccess: (UserInfo userInfo, Token token) {
+                updateClientWithToken(client, token);
+                _userInfo = userInfo;
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProfileScreen(userInfo: userInfo),
+                  ),
+                );
+              }
           ),
-        ),
+          '/profile': (context) => ProfileScreen(userInfo: _userInfo),
+        },
+        // home: SafeArea(
+        //   child: LoginScreen(
+        //     onSignInSuccess: (token) {
+        //       updateClientWithToken(client, token);
+        //     },
+        //   ),
+        // ),
       ),
     );
   }
 }
 
-void updateClientWithToken(ValueNotifier<GraphQLClient> client, String token) {
+void updateClientWithToken(ValueNotifier<GraphQLClient> client, Token token) {
   final HttpLink httpLink = HttpLink(graphqlServer);
 
   final AuthLink authLink = AuthLink(
-    getToken: () async => 'Bearer $token',
+    getToken: () async => 'Bearer ${token.accessToken}',
   );
 
   final Link newLink = authLink.concat(httpLink);

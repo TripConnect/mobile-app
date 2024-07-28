@@ -19,9 +19,9 @@ const signInMutation = """
 """;
 
 class LoginScreen extends StatefulWidget {
-  final Function(String token) onLoginSuccess;
+  final Function(UserInfo userInfo, Token token) onSignInSuccess;
 
-  const LoginScreen({super.key, required this.onLoginSuccess});
+  const LoginScreen({super.key, required this.onSignInSuccess});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     fontSize: 25
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
               Form(
                 key: _formKey,
                 child: Column(
@@ -124,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if(resultData != null) {
                             final signInData = SignInResponse.fromJson(resultData['signin']);
                             print(signInData.token.accessToken);
-                            widget.onLoginSuccess(signInData.token.accessToken);
+                            widget.onSignInSuccess(signInData.userInfo, signInData.token);
                           }
                         },
                         onError: (error) => print(error),
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 20),
                     const Row(
                       children: [
                         Expanded(
@@ -189,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 35),
+                    const SizedBox(height: 25),
                     TextButton(
                       onPressed: _signInWithGoogle,
                       style: TextButton.styleFrom(
