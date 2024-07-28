@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -174,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Expanded(
                           child: Divider(
-                            color: Colors.cyan,
+                            color: Colors.white30,
                             thickness: 0.6,
                           ),
                         ),
@@ -184,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         Expanded(
                           child: Divider(
-                            color: Colors.cyan,
+                            color: Colors.white30,
                             thickness: 0.6,
                           ),
                         ),
