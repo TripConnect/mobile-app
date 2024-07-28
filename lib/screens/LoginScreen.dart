@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -67,7 +68,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Username'),
+                      decoration: InputDecoration(
+                        hintText: 'Username',
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.black, width: 0.5), // Optional border color
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.cyan, width: 1), // Focused border color
+                            borderRadius: BorderRadius.all(Radius.circular(8))
+                        ),
+                      ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your username';
@@ -78,8 +91,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         _username = value ?? '';
                       },
                     ),
+                    const SizedBox(height: 8),
                     TextFormField(
-                      decoration: const InputDecoration(labelText: 'Password'),
+                      decoration: InputDecoration(
+                        hintText: 'Password',
+                        filled: true,
+                        fillColor: Colors.white,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.black, width: 0.5), // Optional border color
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.cyan, width: 1), // Focused border color
+                            borderRadius: BorderRadius.all(Radius.circular(8))
+                        ),
+                      ),
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -125,7 +151,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
                             ),
-                            child: const Text('Login'),
+                            child: const Text('Sign In'),
                           ),
                         );
                       },
