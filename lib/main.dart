@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:mobile_app/screens/LoginScreen.dart';
+import 'package:mobile_app/models/storage.dart';
+import 'package:mobile_app/screens/home_screen.dart';
+import 'package:mobile_app/screens/login_screen.dart';
 import 'package:mobile_app/screens/ProfileScreen.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:mobile_app/constants/common.dart';
+import 'package:provider/provider.dart';
 
 const graphqlServer = '$baseURL/graphql';
 
@@ -26,12 +29,16 @@ void main() async {
     ),
   );
 
-  runApp(Application(client: client));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => Storage(),
+        child: Application(client: client)
+    )
+  );
 }
 
 class Application extends StatelessWidget {
   final ValueNotifier<GraphQLClient> client;
-  late UserInfo _userInfo;
 
   Application({super.key, required this.client});
 
@@ -47,41 +54,34 @@ class Application extends StatelessWidget {
         routes: {
           '/login': (context) => LoginScreen(
               onSignInSuccess: (UserInfo userInfo, Token token) {
-                updateClientWithToken(client, token);
-                _userInfo = userInfo;
+                updateClientWithToken(context, client, userInfo, token);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ProfileScreen(userInfo: userInfo),
+                    builder: (context) => const HomeScreen(),
                   ),
                 );
               }
           ),
-          '/profile': (context) => ProfileScreen(userInfo: _userInfo),
         },
-        // home: SafeArea(
-        //   child: LoginScreen(
-        //     onSignInSuccess: (token) {
-        //       updateClientWithToken(client, token);
-        //     },
-        //   ),
-        // ),
       ),
     );
   }
 }
 
-void updateClientWithToken(ValueNotifier<GraphQLClient> client, Token token) {
+void updateClientWithToken(
+    BuildContext context, ValueNotifier<GraphQLClient> client, UserInfo userInfo, Token token) {
   final HttpLink httpLink = HttpLink(graphqlServer);
-
   final AuthLink authLink = AuthLink(
     getToken: () async => 'Bearer ${token.accessToken}',
   );
-
   final Link newLink = authLink.concat(httpLink);
-
   client.value = GraphQLClient(
     link: newLink,
     cache: GraphQLCache(store: HiveStore()),
   );
+
+  var appData = Provider.of<Storage>(context);
+  appData.updateCurrentUser(userInfo);
+  appData.updateGQLClient(client);
 }

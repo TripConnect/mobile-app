@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/constants/common.dart';
+import 'package:mobile_app/models/storage.dart';
 import 'package:mobile_app/models/user.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final UserInfo userInfo;
-
-  const ProfileScreen({super.key, required this.userInfo});
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -14,9 +14,11 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
+    var globalStorage = Provider.of<Storage>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.userInfo.displayName),
+        title: Text(globalStorage.currentUser.displayName),
         backgroundColor: appBarBackgroundColor,
       ),
       body: Padding(
@@ -29,12 +31,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 CircleAvatar(
                   radius: 50,
-                  backgroundImage: NetworkImage(widget.userInfo.avatar),
+                  backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
                 ),
                 const SizedBox(width: 30),
                 Expanded(
                   child: Text(
-                    widget.userInfo.displayName,
+                    globalStorage.currentUser.displayName,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
