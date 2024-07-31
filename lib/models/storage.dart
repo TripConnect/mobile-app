@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/user.dart';
 
 class Storage with ChangeNotifier {
@@ -14,8 +15,21 @@ class Storage with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateGQLClient(ValueNotifier<GraphQLClient> gqlClient) {
-    _gqlClient = gqlClient;
+  void updateGQLClient(String accessToken) {
+    final HttpLink httpLink = HttpLink(graphqlServer);
+
+    final AuthLink authLink = AuthLink(
+      getToken: () async => 'Beaver $accessToken',
+    );
+
+    final Link link = authLink.concat(httpLink);
+
+    _gqlClient = ValueNotifier(
+      GraphQLClient(
+        link: link,
+        cache: GraphQLCache(store: HiveStore()),
+      ),
+    );
     notifyListeners();
   }
 }

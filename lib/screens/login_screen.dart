@@ -1,6 +1,9 @@
+import 'package:mobile_app/models/storage.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mobile_app/screens/home_screen.dart';
+import 'package:provider/provider.dart';
 
 const signInMutation = """
   mutation SignIn(\$username: String!, \$password: String!) {
@@ -19,9 +22,8 @@ const signInMutation = """
 """;
 
 class LoginScreen extends StatefulWidget {
-  final Function(UserInfo userInfo, Token token) onSignInSuccess;
 
-  const LoginScreen({super.key, required this.onSignInSuccess});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -38,6 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var globalStorage = Provider.of<Storage>(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Container(
@@ -124,8 +128,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         onCompleted: (dynamic resultData) {
                           if(resultData != null) {
                             final signInData = SignInResponse.fromJson(resultData['signin']);
-                            print(signInData.token.accessToken);
-                            widget.onSignInSuccess(signInData.userInfo, signInData.token);
+                            globalStorage.updateCurrentUser(signInData.userInfo);
+                            globalStorage.updateGQLClient(signInData.token.accessToken);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HomeScreen(),
+                              ),
+                            );
                           }
                         },
                         onError: (error) => print(error),
