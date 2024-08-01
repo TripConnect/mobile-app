@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/models/user.dart';
+import 'package:mobile_app/screens/message_screen.dart';
 import 'package:mobile_app/screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,8 +12,9 @@ class HomeScreen extends StatefulWidget {
 class _AuthenticatedApplicationState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-    static const List<Widget> _widgetOptions = <Widget>[
+  static const List<Widget> _widgetOptions = <Widget>[
     ProfileScreen(),
+    MessageScreen(),
     Text(
       'Settings screen',
     ),
@@ -28,17 +29,18 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('BottomNavigationBar Sample'),
-      ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+            icon: Icon(Icons.account_circle),
+            label: 'Profile',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.chat),
+            label: 'Messages',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

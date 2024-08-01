@@ -16,10 +16,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     var globalStorage = Provider.of<Storage>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(globalStorage.currentUser.displayName),
-        backgroundColor: appBarBackgroundColor,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

@@ -5,15 +5,11 @@ import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/user.dart';
 
 class Storage with ChangeNotifier {
-  UserInfo _currentUser = UserInfo(
-      id: "00000000-0000-0000-0000-000000000000",
-      displayName: "Unknown",
-      avatar: defaultUserAvatar
-  );
+  UserInfo _currentUser = defaultUser;
   ValueNotifier<GraphQLClient> _gqlClient = ValueNotifier(
     GraphQLClient(
       link: AuthLink(
-        getToken: () async => 'Beaver DEFAULT',
+        getToken: () async => '',
       ).concat(HttpLink(graphqlServer)),
       cache: GraphQLCache(store: HiveStore()),
     ),

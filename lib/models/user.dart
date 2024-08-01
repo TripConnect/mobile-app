@@ -5,7 +5,7 @@ class UserInfo {
   final String displayName;
   final String avatar;
 
-  UserInfo({
+  const UserInfo({
     required this.id,
     required this.displayName,
     required this.avatar,
