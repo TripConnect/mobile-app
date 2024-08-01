@@ -100,7 +100,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           border: transparentBorderStyle,
                           enabledBorder: transparentBorderStyle,
                           focusedBorder: transparentBorderStyle,
-                          labelText: 'Search',
+                          hintText: "Search",
                           prefixIcon: Icon(Icons.search),
                         ),
                       ),
