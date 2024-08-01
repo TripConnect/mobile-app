@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/user.dart';
 
 class Storage with ChangeNotifier {
-  late UserInfo _currentUser;
-  late ValueNotifier<GraphQLClient> _gqlClient;
+  UserInfo _currentUser = UserInfo(
+      id: "00000000-0000-0000-0000-000000000000",
+      displayName: "Unknown",
+      avatar: defaultUserAvatar
+  );
+  ValueNotifier<GraphQLClient> _gqlClient = ValueNotifier(
+    GraphQLClient(
+      link: AuthLink(
+        getToken: () async => 'Beaver DEFAULT',
+      ).concat(HttpLink(graphqlServer)),
+      cache: GraphQLCache(store: HiveStore()),
+    ),
+  );
 
   UserInfo get currentUser => _currentUser;
   ValueNotifier<GraphQLClient> get gqlClient => _gqlClient;
