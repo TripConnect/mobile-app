@@ -1,6 +1,18 @@
+import 'dart:async'; // Import for Timer
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/models/user.dart';
+
+const searchUsersQuery = """
+  query SearchUsers(\$searchTerm: String!) {
+    users(searchTerm: \$searchTerm) {
+      id
+      avatar
+      displayName
+    }
+  }
+""";
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
@@ -32,21 +44,24 @@ class _SearchResultUser extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _MessageScreenState extends State<MessageScreen> {
-  List<UserInfo> _searchResult = [];
+  final TextEditingController _searchController = TextEditingController();
+  final Duration _debounceTime = const Duration(seconds: 1);
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
-    _searchResult = [defaultUser, defaultUser, defaultUser];
+    _searchController.addListener(_onSearchChanged);
   }
 
-  void onSearchTermSubmit(String term) {
-    setState(() {
-      _searchResult = [defaultUser];
+  void _onSearchChanged() {
+    if (_debounce?.isActive ?? false) _debounce?.cancel();
+    _debounce = Timer(_debounceTime, () {
+      // Trigger a rebuild and execute the query
+      setState(() {});
     });
   }
 
@@ -59,25 +74,58 @@ class _MessageScreenState extends State<MessageScreen> {
           children: <Widget>[
             Expanded(
               flex: 1,
-              child: TextField(
-                decoration: const InputDecoration(
-                  border: transparentBorderStyle,
-                  enabledBorder: transparentBorderStyle,
-                  focusedBorder: transparentBorderStyle,
-                  labelText: 'Search',
-                  prefixIcon: Icon(Icons.search),
+              child: Query(
+                options: QueryOptions(
+                  document: gql(searchUsersQuery),
+                  variables: {'searchTerm': _searchController.text},
+                  // Optionally, set pollInterval to auto-refresh
+                  // pollInterval: Duration(seconds: 5),
                 ),
-                onSubmitted: onSearchTermSubmit,
+                builder: (QueryResult result, {refetch, fetchMore}) {
+                  if (result.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (result.hasException) {
+                    return Center(child: Text(result.exception.toString()));
+                  }
+
+                  final List users = result.data?['users'] ?? [];
+
+                  return Column(
+                    children: <Widget>[
+                      TextField(
+                        controller: _searchController,
+                        decoration: const InputDecoration(
+                          border: transparentBorderStyle,
+                          enabledBorder: transparentBorderStyle,
+                          focusedBorder: transparentBorderStyle,
+                          labelText: 'Search',
+                          prefixIcon: Icon(Icons.search),
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView(
+                          children: users
+                              .map((user) => _SearchResultUser(UserInfo.fromJson(user)))
+                              .toList(),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
-            Expanded(
-              child: ListView(
-                children: _searchResult.map((result) => _SearchResultUser(result)).toList(),
-              )
-            )
           ],
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
   }
 }
