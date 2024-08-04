@@ -13,7 +13,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    var globalStorage = Provider.of<Storage>(context);
+    var globalStorage = Provider.of<GlobalStorage>(context);
 
     return Scaffold(
       body: Padding(

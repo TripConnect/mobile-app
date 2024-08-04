@@ -22,3 +22,22 @@ const socketChatNamespace = "chat";
 const transparentBorderStyle = OutlineInputBorder(
   borderSide: BorderSide(color: Colors.transparent),
 );
+
+// Enum definitions
+enum Language {
+  vi("vi", "Vietnamese"),
+  en("en", "English");
+
+  final String code;
+  final String text;
+
+  const Language(this.code, this.text);
+}
+
+enum ConversationType {
+  private("PRIVATE");
+
+  final String code;
+
+  const ConversationType(this.code);
+}

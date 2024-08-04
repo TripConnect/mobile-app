@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/models/user.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const searchUsersQuery = """
   query SearchUsers(\$searchTerm: String!) {
@@ -96,12 +97,12 @@ class _MessageScreenState extends State<MessageScreen> {
                     children: <Widget>[
                       TextField(
                         controller: _searchController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           border: transparentBorderStyle,
                           enabledBorder: transparentBorderStyle,
                           focusedBorder: transparentBorderStyle,
-                          hintText: "Search",
-                          prefixIcon: Icon(Icons.search),
+                          hintText: AppLocalizations.of(context)!.search,
+                          prefixIcon: const Icon(Icons.search),
                         ),
                       ),
                       Expanded(

@@ -4,7 +4,8 @@ import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/main.dart';
 import 'package:mobile_app/models/user.dart';
 
-class Storage with ChangeNotifier {
+class GlobalStorage with ChangeNotifier {
+  Locale _locale = Locale(Language.en.name);
   UserInfo _currentUser = defaultUser;
   ValueNotifier<GraphQLClient> _gqlClient = ValueNotifier(
     GraphQLClient(
@@ -15,8 +16,14 @@ class Storage with ChangeNotifier {
     ),
   );
 
+  Locale get locale => _locale;
   UserInfo get currentUser => _currentUser;
   ValueNotifier<GraphQLClient> get gqlClient => _gqlClient;
+
+  void setLocale(Locale locale) {
+    _locale = locale;
+    notifyListeners();
+  }
 
   void updateCurrentUser(UserInfo currentUser) {
     _currentUser = currentUser;

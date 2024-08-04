@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:mobile_app/screens/home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const signInMutation = """
   mutation SignIn(\$username: String!, \$password: String!) {
@@ -31,8 +32,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _username = '';
-  String _password = '';
+  String _username = 'sadboy1999';
+  String _password = '123456789';
 
   _signInWithGoogle() {
     print("Feature not implemented");
@@ -40,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    var globalStorage = Provider.of<Storage>(context);
+    var globalStorage = Provider.of<GlobalStorage>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -163,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 50),
                             ),
-                            child: const Text('Sign In'),
+                            child: Text(AppLocalizations.of(context)!.signIn),
                           ),
                         );
                       },
