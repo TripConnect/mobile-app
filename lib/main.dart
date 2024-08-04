@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:mobile_app/screens/LoginScreen.dart';
-import 'package:mobile_app/screens/ProfileScreen.dart';
-import 'package:mobile_app/models/user.dart';
+import 'package:mobile_app/models/storage.dart';
+import 'package:mobile_app/screens/login_screen.dart';
 import 'package:mobile_app/constants/common.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const graphqlServer = '$baseURL/graphql';
 
@@ -11,77 +12,35 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initHiveForFlutter();
 
-  final HttpLink httpLink = HttpLink(graphqlServer);
-
-  final AuthLink authLink = AuthLink(
-    getToken: () async => '',
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => GlobalStorage(),
+        child: const Application()
+    )
   );
-
-  final Link link = authLink.concat(httpLink);
-
-  ValueNotifier<GraphQLClient> client = ValueNotifier(
-    GraphQLClient(
-      link: link,
-      cache: GraphQLCache(store: HiveStore()),
-    ),
-  );
-
-  runApp(Application(client: client));
 }
 
 class Application extends StatelessWidget {
-  final ValueNotifier<GraphQLClient> client;
-  late UserInfo _userInfo;
-
-  Application({super.key, required this.client});
+  const Application({super.key});
 
   @override
   Widget build(BuildContext context) {
+    var globalStorage = Provider.of<GlobalStorage>(context);
+
     return GraphQLProvider(
-      client: client,
+      client: globalStorage.gqlClient,
       child: MaterialApp(
+        locale: globalStorage.locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) {
           return SafeArea(child: child!);
         },
         initialRoute: "/login",
         routes: {
-          '/login': (context) => LoginScreen(
-              onSignInSuccess: (UserInfo userInfo, Token token) {
-                updateClientWithToken(client, token);
-                _userInfo = userInfo;
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProfileScreen(userInfo: userInfo),
-                  ),
-                );
-              }
-          ),
-          '/profile': (context) => ProfileScreen(userInfo: _userInfo),
+          '/login': (context) => const LoginScreen(),
         },
-        // home: SafeArea(
-        //   child: LoginScreen(
-        //     onSignInSuccess: (token) {
-        //       updateClientWithToken(client, token);
-        //     },
-        //   ),
-        // ),
       ),
     );
   }
-}
-
-void updateClientWithToken(ValueNotifier<GraphQLClient> client, Token token) {
-  final HttpLink httpLink = HttpLink(graphqlServer);
-
-  final AuthLink authLink = AuthLink(
-    getToken: () async => 'Bearer ${token.accessToken}',
-  );
-
-  final Link newLink = authLink.concat(httpLink);
-
-  client.value = GraphQLClient(
-    link: newLink,
-    cache: GraphQLCache(store: HiveStore()),
-  );
 }
