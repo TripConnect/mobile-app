@@ -1,3 +1,4 @@
+import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/models/storage.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:flutter/material.dart';
@@ -32,8 +33,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _username = 'sadboy1999';
-  String _password = '123456789';
+  String _username = '';
+  String _password = '';
 
   _signInWithGoogle() {
     print("Feature not implemented");
@@ -58,9 +59,9 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.only(top: 150, left: 30, right: 30, bottom: 0),
           child: Column(
             children: <Widget>[
-              const Text(
-                "Welcome back! Enter to enjoy you journey with everyone",
-                style: TextStyle(
+               Text(
+                 AppLocalizations.of(context)!.sign_up_welcome_message,
+                style: const TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 25
                 ),
@@ -74,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: <Widget>[
                     TextFormField(
                       decoration: InputDecoration(
-                        hintText: 'Username',
+                        hintText: AppLocalizations.of(context)!.username,
                         filled: true,
                         fillColor: Colors.white,
                         enabledBorder: OutlineInputBorder(
@@ -88,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your username';
+                          return AppLocalizations.of(context)!.please_enter_your_username_alert;
                         }
                         return null;
                       },
@@ -100,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 8),
                     TextFormField(
                       decoration: InputDecoration(
-                        hintText: 'Password',
+                        hintText: AppLocalizations.of(context)!.password,
                         filled: true,
                         fillColor: Colors.white,
                         enabledBorder: OutlineInputBorder(
@@ -115,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       obscureText: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter your password';
+                          return AppLocalizations.of(context)!.please_enter_your_password_alert;
                         }
                         return null;
                       },
@@ -175,27 +176,27 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextButton(
                           onPressed: () {},
-                          child: const Text(
-                              "Forgot password?",
+                          child: Text(
+                              AppLocalizations.of(context)!.forgot_password_question,
                               style: TextStyle(color: Colors.black54)
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 20),
-                    const Row(
+                    Row(
                       children: [
-                        Expanded(
+                        const Expanded(
                           child: Divider(
                             color: Colors.white30,
                             thickness: 0.6,
                           ),
                         ),
                         Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 10),
-                          child: Text('Or sign in with'),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(AppLocalizations.of(context)!.or_sign_in_with),
                         ),
-                        Expanded(
+                        const Expanded(
                           child: Divider(
                             color: Colors.white30,
                             thickness: 0.6,
@@ -218,18 +219,50 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: 30,
                       ),
                     ),
-                    const SizedBox(height: 220),
+                    const SizedBox(height: 200),
                     Row(
                       mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        const Text("Don't have an account?"),
+                        Text(AppLocalizations.of(context)!.do_not_have_account_question),
                         TextButton(
                             onPressed: (){},
-                            child: const Text("Register now", style: TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
-                        )
+                            child: Text(AppLocalizations.of(context)!.register_now, style: TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
+                        ),
                       ],
                     ),
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.language,
+                          color: Colors.black,
+                          size: 20.0,
+                        ),
+                        const SizedBox(width: 10),
+                        DropdownButton<Locale>(
+                          value: Localizations.localeOf(context),
+                          onChanged: (Locale? newLocale) {
+                            if (newLocale != null) {
+                              print(newLocale);
+                              Provider.of<GlobalStorage>(context, listen: false).setLocale(newLocale);
+                            }
+                          },
+                          items: [
+                            DropdownMenuItem(
+                              value: Locale(Language.en.code),
+                              child: Text(Language.en.text),
+                            ),
+                            DropdownMenuItem(
+                              value: Locale(Language.vi.code),
+                              child: Text(Language.vi.text),
+                            ),
+                          ],
+                        ),
+                      ],
+                    )
+
                   ],
                 ),
               ),
