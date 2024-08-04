@@ -19,6 +19,7 @@ const defaultUser = UserInfo(
 const socketChatNamespace = "chat";
 
 // UI constants
+const googleLogoURL = 'assets/images/google-logo.png';
 const transparentBorderStyle = OutlineInputBorder(
   borderSide: BorderSide(color: Colors.transparent),
 );

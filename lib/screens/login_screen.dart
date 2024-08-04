@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: () {},
                           child: Text(
                               AppLocalizations.of(context)!.forgot_password_question,
-                              style: TextStyle(color: Colors.black54)
+                              style: const TextStyle(color: Colors.black54)
                           ),
                         ),
                       ],
@@ -214,7 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         side: const BorderSide(width: 0.8, color: Colors.black45),
                       ),
                       child: Image.asset(
-                        'assets/images/google-logo.png',
+                        googleLogoURL,
                         fit: BoxFit.contain,
                         width: 30,
                       ),
