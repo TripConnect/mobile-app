@@ -2,8 +2,11 @@ import 'dart:async'; // Import for Timer
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:mobile_app/constants/common.dart';
+import 'package:mobile_app/models/storage.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:mobile_app/screens/chat_screen.dart';
+import 'package:provider/provider.dart';
 
 const searchUsersQuery = """
   query SearchUsers(\$searchTerm: String!) {
@@ -11,6 +14,14 @@ const searchUsersQuery = """
       id
       avatar
       displayName
+    }
+  }
+""";
+
+const createConversationMutation = """
+  mutation CreateConversation(\$type: String!, \$members: String!) {
+    createConversation(type: \$type, members: \$members) {
+      id
     }
   }
 """;
@@ -31,17 +42,38 @@ class _SearchResultUser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(2),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: avatarSizeSmall,
-            backgroundImage: NetworkImage(userInfo.avatar),
+    var globalStorage = Provider.of<GlobalStorage>(context);
+
+    return GestureDetector (
+      onTap: () async {
+        final mutationResult = await globalStorage.gqlClient.value.mutate(
+            MutationOptions(
+              document: gql(createConversationMutation),
+              variables: {
+                'type': ConversationType.private.code,
+                'members': [globalStorage.currentUser.id, userInfo.id].join(",")
+              },
+            )
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(mutationResult.data!["createConversation"]["id"]),
           ),
-          const SizedBox(width: 12),
-          Text(userInfo.displayName)
-        ],
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.all(2),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: avatarSizeSmall,
+              backgroundImage: NetworkImage(userInfo.avatar),
+            ),
+            const SizedBox(width: 12),
+            Text(userInfo.displayName)
+          ],
+        ),
       ),
     );
   }

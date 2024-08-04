@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_app/models/storage.dart';
 import 'package:mobile_app/screens/message_screen.dart';
 import 'package:mobile_app/screens/profile_screen.dart';
 import 'package:mobile_app/screens/setting_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,6 +30,8 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var globalStorage = Provider.of<GlobalStorage>(context);
+
     return Scaffold(
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
@@ -35,7 +39,13 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: const Icon(Icons.account_circle),
+            icon: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircleAvatar(
+                backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+              ),
+            ),
             label: AppLocalizations.of(context)!.profile,
           ),
           BottomNavigationBarItem(
