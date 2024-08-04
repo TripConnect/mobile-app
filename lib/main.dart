@@ -30,6 +30,7 @@ class Application extends StatelessWidget {
     return GraphQLProvider(
       client: globalStorage.gqlClient,
       child: MaterialApp(
+        theme: ThemeData(fontFamily: 'inter'),
         locale: globalStorage.locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

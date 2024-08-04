@@ -47,7 +47,7 @@ class _SettingScreenState extends State<SettingScreen> {
                       child: Text(Language.vi.text),
                     ),
                   ],
-                ),
+               ),
              ],
            )
           ],
