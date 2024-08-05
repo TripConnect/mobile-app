@@ -6,11 +6,13 @@ import 'package:mobile_app/models/storage.dart';
 import 'package:mobile_app/models/user.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_app/screens/chat_screen.dart';
+import 'package:mobile_app/screens/home_screen.dart';
+import 'package:mobile_app/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 
-const searchUsersQuery = """
-  query SearchUsers(\$searchTerm: String!) {
-    users(searchTerm: \$searchTerm) {
+const searchUsersQuery = r"""
+  query SearchUsers($searchTerm: String!) {
+    users(searchTerm: $searchTerm) {
       id
       avatar
       displayName
@@ -18,9 +20,9 @@ const searchUsersQuery = """
   }
 """;
 
-const createConversationMutation = """
-  mutation CreateConversation(\$type: String!, \$members: String!) {
-    createConversation(type: \$type, members: \$members) {
+const createConversationMutation = r"""
+  mutation CreateConversation($type: String!, $members: String!) {
+    createConversation(type: $type, members: $members) {
       id
     }
   }
@@ -46,6 +48,16 @@ class _SearchResultUser extends StatelessWidget {
 
     return GestureDetector (
       onTap: () async {
+        if(globalStorage.currentUser.id == userInfo.id) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const HomeScreen()
+            ),
+          );
+          return;
+        }
+
         final mutationResult = await globalStorage.gqlClient.value.mutate(
             MutationOptions(
               document: gql(createConversationMutation),
@@ -55,10 +67,11 @@ class _SearchResultUser extends StatelessWidget {
               },
             )
         );
+
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ChatScreen(mutationResult.data!["createConversation"]["id"]),
+            builder: (context) => ChatScreen(mutationResult.data!["createConversation"]["id"])
           ),
         );
       },

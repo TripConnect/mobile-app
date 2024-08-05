@@ -40,8 +40,8 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 24,
-              height: 24,
+              width: 40,
+              height: 40,
               child: CircleAvatar(
                 backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
               ),

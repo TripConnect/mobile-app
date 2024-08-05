@@ -33,8 +33,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _username = '';
-  String _password = '';
+  String _username = 'sadboy1999';
+  String _password = '123456789';
 
   _signInWithGoogle() {
     print("Feature not implemented");

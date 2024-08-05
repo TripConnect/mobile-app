@@ -41,4 +41,11 @@ enum ConversationType {
   final String code;
 
   const ConversationType(this.code);
+
+  static ConversationType valueOf(String text) {
+    for(ConversationType type in values) {
+      if(type.code == text) return type;
+    }
+    throw Exception('Incorrect value: $text');
+  }
 }
