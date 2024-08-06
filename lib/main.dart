@@ -13,8 +13,10 @@ void main() async {
   await initHiveForFlutter();
 
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => GlobalStorage(),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => GlobalStorage())
+        ],
         child: const Application()
     )
   );
