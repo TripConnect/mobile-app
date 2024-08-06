@@ -7,7 +7,6 @@ import 'package:mobile_app/models/user.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:mobile_app/screens/chat_screen.dart';
 import 'package:mobile_app/screens/home_screen.dart';
-import 'package:mobile_app/screens/profile_screen.dart';
 import 'package:provider/provider.dart';
 
 const searchUsersQuery = r"""

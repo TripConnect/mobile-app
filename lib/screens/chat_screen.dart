@@ -3,6 +3,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/models/chat.dart';
 import 'package:mobile_app/models/storage.dart';
+import 'package:mobile_app/models/user.dart';
 import 'package:provider/provider.dart';
 
 const conversationSummaryQuery = r"""
@@ -37,6 +38,53 @@ const chatHistoryQuery = r"""
   }
 """;
 
+class ChatMessageItem extends StatelessWidget {
+  final ChatMessage message;
+  const ChatMessageItem(this.message, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var globalStorage = Provider.of<GlobalStorage>(context);
+    bool isMine = message.sender.id == globalStorage.currentUser.id;
+
+    return Align(
+      alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
+      child: Row(
+        children: <Widget>[
+          SizedBox(
+            width: 35,
+            height: 35,
+            child: CircleAvatar(
+              backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 5),
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: isMine ? Colors.blueAccent : Colors.grey,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                if(!isMine)
+                  Text(
+                    message.sender.displayName,
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)
+                  ),
+                Text(message.content),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+}
+
 class ChatScreen extends StatefulWidget {
   final String _conversationId;
 
@@ -47,7 +95,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  int _currentChatHistoryPageNum = 1;
+  final int _currentChatHistoryPageNum = 1;
   final int pageSize = 100;
 
   Future<List<ChatMessage>> getChatHistory(GraphQLClient gqlClient) async {
@@ -94,35 +142,41 @@ class _ChatScreenState extends State<ChatScreen> {
             padding: const EdgeInsets.all(paddingMedium),
             child: Column(
               children: <Widget>[
-                Row(
-                  children: [
-                    Text(title, style: const TextStyle(fontSize: 25))
-                  ],
-                ),
                 Container(
-                  child: FutureBuilder<List<ChatMessage>>(
-                    future: getChatHistory(globalStorage.gqlClient.value),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Column(children: []);
-                      } else {
-                        return Column(
-                          children: snapshot.data
-                            !.map((m) => Align(
-                              alignment: m.sender.id == globalStorage.currentUser.id ?
-                                Alignment.centerRight : Alignment.centerLeft,
-                              child: Text(m.content)
-                            ),
-                          )
-                          .toList()
-                        );
-                      }
-                    }
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: CircleAvatar(
+                          backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(title, style: const TextStyle(fontSize: 25))
+                    ],
                   ),
+                ),
+                FutureBuilder<List<ChatMessage>>(
+                  future: getChatHistory(globalStorage.gqlClient.value),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Column(children: []);
+                    } else {
+                      return SingleChildScrollView(
+                        child: Column(
+                          children: snapshot.data
+                            !.map((m) => ChatMessageItem(m))
+                            .toList()
+                        ),
+                      );
+                    }
+                  }
                 )
               ],
             ),

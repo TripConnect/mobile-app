@@ -227,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text(AppLocalizations.of(context)!.do_not_have_account_question),
                         TextButton(
                             onPressed: (){},
-                            child: Text(AppLocalizations.of(context)!.register_now, style: TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
+                            child: Text(AppLocalizations.of(context)!.register_now, style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
                         ),
                       ],
                     ),
