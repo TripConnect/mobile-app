@@ -153,9 +153,16 @@ class _ChatScreenState extends State<ChatScreen> {
           }
 
           Conversation conversation = Conversation.fromJson(result.data?["conversation"]);
-          String title = ConversationType.private == conversation.type ?
-            conversation.members.firstWhere((m) => m.id != globalStorage.currentUser.id).displayName :
-            "Chat title"; // FIXME: Remember update here for other types
+
+          String title = conversation.name.isNotEmpty ?
+              conversation.name :
+              conversation.members
+                .where((m) => m.id != globalStorage.currentUser.id)
+                .map((m) => m.displayName)
+                .join(", ");
+          if(title.length > conversationTitleMaxLength) {
+            title = '${title.substring(0, conversationTitleMaxLength)}...';
+          }
 
           return Padding(
             padding: const EdgeInsets.all(paddingMedium),

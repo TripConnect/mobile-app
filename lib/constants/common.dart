@@ -23,6 +23,7 @@ const googleLogoURL = 'assets/images/google-logo.png';
 const transparentBorderStyle = OutlineInputBorder(
   borderSide: BorderSide(color: Colors.transparent),
 );
+const conversationTitleMaxLength = 20;
 
 // Enum definitions
 enum Language {
