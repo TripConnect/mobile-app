@@ -4,6 +4,7 @@ import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/models/chat.dart';
 import 'package:mobile_app/models/storage.dart';
 import 'package:provider/provider.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const conversationSummaryQuery = r"""
@@ -184,9 +185,6 @@ class _ChatScreenState extends State<ChatScreen> {
                 .where((m) => m.id != globalStorage.currentUser.id)
                 .map((m) => m.displayName)
                 .join(", ");
-          if(title.length > conversationTitleMaxLength) {
-            title = '${title.substring(0, conversationTitleMaxLength)}...';
-          }
 
           return Padding(
             padding: const EdgeInsets.all(paddingMedium),
@@ -195,16 +193,27 @@ class _ChatScreenState extends State<ChatScreen> {
                 Container(
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: 50,
-                        height: 50,
-                        child: CircleAvatar(
-                          backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+                      Flexible(
+                        flex: 1,
+                        child: SizedBox(
+                          width: 50,
+                          height: 50,
+                          child: CircleAvatar(
+                            backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Text(title, style: const TextStyle(fontSize: 25))
+                      const SizedBox(width: 20),
+                      Flexible(
+                        flex: 5,
+                        child: Text(
+                          title,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 25)
+                        )
+                      )
                     ],
                   ),
                 ),
@@ -213,7 +222,15 @@ class _ChatScreenState extends State<ChatScreen> {
                     future: _fetchChatHistory(globalStorage.gqlClient.value),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        if(messages.isEmpty) return const Center(child: CircularProgressIndicator());
+                        if(messages.isEmpty) {
+                          return Center(
+                            child: LoadingAnimationWidget.twistingDots(
+                              leftDotColor: const Color(0xFF1A1A3F),
+                              rightDotColor: const Color(0xFFEA3799),
+                              size: 50,
+                            ),
+                          );
+                        }
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
