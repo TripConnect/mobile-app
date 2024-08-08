@@ -53,7 +53,7 @@ class ChatMessageItem extends StatelessWidget {
         SizedBox(
           width: 35,
           height: 35,
-          child: CircleAvatar(
+          child: isMine ? null : CircleAvatar(
             backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
           ),
         ),
