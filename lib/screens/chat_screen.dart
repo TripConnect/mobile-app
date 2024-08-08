@@ -96,6 +96,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<ChatMessage> messages = [];
+  bool _isFetchingChatMessages = false;
   bool _isReadySendMessage = false;
   int _currentChatHistoryPageNum = 1;
   final int pageSize = 100;
@@ -122,9 +123,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _onScroll() {
     print("scrolling...");
-    if(_scrollController.position.atEdge) {
+    if(_scrollController.position.atEdge && !_isFetchingChatMessages) {
       bool isTop = _scrollController.position.pixels == 0;
       if (isTop) {
+        _isFetchingChatMessages = true;
         _currentChatHistoryPageNum++;
         setState(() {});
       }
@@ -145,6 +147,9 @@ class _ChatScreenState extends State<ChatScreen> {
     // return (result.data?["conversation"]["messages"] as List)
     //     .map((m) => ChatMessage.fromJson(m))
     //     .toList();
+
+    await Future.delayed(const Duration(seconds: 2));
+    _isFetchingChatMessages = false;
     return List.generate(pageSize, (index) => ChatMessage(
       id: '',
       content: 'fake content page=$_currentChatHistoryPageNum index=$index',
@@ -208,20 +213,20 @@ class _ChatScreenState extends State<ChatScreen> {
                     future: _fetchChatHistory(globalStorage.gqlClient.value),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
+                        if(messages.isEmpty) return const Center(child: CircularProgressIndicator());
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Column(children: []);
                       } else {
                         messages.insertAll(0, snapshot.data!);
-                        return ListView(
-                            controller: _scrollController,
-                            children: messages
+                      }
+                      return ListView(
+                          controller: _scrollController,
+                          children: messages
                               .map((m) => ChatMessageItem(m))
                               .toList()
-                        );
-                      }
+                      );
                     }
                   ),
                 ),
