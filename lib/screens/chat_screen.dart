@@ -132,19 +132,24 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<List<ChatMessage>> _fetchChatHistory(GraphQLClient gqlClient) async {
-    var result = await gqlClient.query(
-      QueryOptions(
-        document: gql(chatHistoryQuery),
-        variables: {
-          'id': widget._conversationId,
-          'page': _currentChatHistoryPageNum,
-          'limit': pageSize
-        },
-      ),
-    );
-    return (result.data?["conversation"]["messages"] as List)
-        .map((m) => ChatMessage.fromJson(m))
-        .toList();
+    // var result = await gqlClient.query(
+    //   QueryOptions(
+    //     document: gql(chatHistoryQuery),
+    //     variables: {
+    //       'id': widget._conversationId,
+    //       'page': _currentChatHistoryPageNum,
+    //       'limit': pageSize
+    //     },
+    //   ),
+    // );
+    // return (result.data?["conversation"]["messages"] as List)
+    //     .map((m) => ChatMessage.fromJson(m))
+    //     .toList();
+    return List.generate(pageSize, (index) => ChatMessage(
+      id: '',
+      content: 'fake content page=$_currentChatHistoryPageNum index=$index',
+      sender: defaultUser
+    ));
   }
 
   @override
