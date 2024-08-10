@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if(resultData != null) {
                             final signInData = SignInResponse.fromJson(resultData['signin']);
                             globalStorage.updateCurrentUser(signInData.userInfo);
-                            globalStorage.updateGQLClient(signInData.token.accessToken);
+                            globalStorage.updateGQLClient(signInData.token);
                             Navigator.push(
                               context,
                               MaterialPageRoute(

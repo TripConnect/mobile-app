@@ -5,6 +5,7 @@ import 'package:mobile_app/models/chat.dart';
 import 'package:mobile_app/models/storage.dart';
 import 'package:provider/provider.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const conversationSummaryQuery = r"""
@@ -96,6 +97,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  IO.Socket? _socket;
   List<ChatMessage> messages = [];
   bool _isDuringChatMessagesFetching = false;
   int _currentChatHistoryPageNum = 1;
@@ -110,9 +112,32 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    _messageController.removeListener(_onMessageChange);
-    _messageController.dispose();
     super.dispose();
+    _socket?.io.disconnect();
+    _messageController.removeListener(_onMessageChange);
+    _scrollController.removeListener(_onScroll);
+    _messageController.dispose();
+  }
+
+  void setupChatSocket(String accessToken) {
+    _socket = IO.io(
+      '$baseURL/chat',
+      IO.OptionBuilder()
+          .setTransports(['websocket'])
+          .setAuth({'token': accessToken})
+          .build(),
+    );
+
+    // Handle connection events
+    _socket!.onConnect((_) {
+      print('connected');
+    });
+
+    _socket!.onDisconnect((_) {
+      print('disconnected');
+    });
+
+    // Add more event listeners as needed
   }
 
   void _onMessageChange() {
@@ -160,6 +185,10 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     var globalStorage = Provider.of<GlobalStorage>(context);
+
+    if(_socket == null) {
+      setupChatSocket(globalStorage.token!.accessToken);
+    }
 
     return Scaffold(
       body: Query(
