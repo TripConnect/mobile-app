@@ -127,9 +127,10 @@ class _ChatScreenState extends State<ChatScreen> {
     if(_scrollController.position.atEdge && !_isFetchingChatMessages) {
       bool isTop = _scrollController.position.pixels == 0;
       if (isTop) {
-        _isFetchingChatMessages = true;
-        _currentChatHistoryPageNum++;
-        setState(() {});
+        setState(() {
+          _isFetchingChatMessages = true;
+          _currentChatHistoryPageNum++;
+        });
       }
     }
   }
