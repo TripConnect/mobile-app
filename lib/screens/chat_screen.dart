@@ -121,23 +121,29 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void setupChatSocket(String accessToken) {
     _socket = IO.io(
-      '$baseURL/chat',
+      socketIOChatNameSpace,
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': accessToken})
           .build(),
     );
 
-    // Handle connection events
-    _socket!.onConnect((_) {
-      print('connected');
+    _socket?.on('message', (data) {
+      print('received $data');
     });
+  }
 
-    _socket!.onDisconnect((_) {
-      print('disconnected');
-    });
-
-    // Add more event listeners as needed
+  void _sendChatMessage(String conversationId, String content) {
+    Map<String, String> payload = {
+      'conversationId': conversationId,
+      'content': content
+    };
+    if (_socket?.connected == true) {
+      _socket?.emit('message', payload);
+      print('sent: $payload');
+    } else {
+      print('Socket not connected, cannot send message.');
+    }
   }
 
   void _onMessageChange() {
@@ -284,7 +290,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     suffixIcon: _messageController.text.isNotEmpty ?
                       GestureDetector(
                         onTap: () {
-                          print("send: ${_messageController.text}");
+                          _sendChatMessage(widget._conversationId, _messageController.text);
                           _messageController.text = '';
                         },
                         child: const Icon(Icons.send, color: Colors.blue)
