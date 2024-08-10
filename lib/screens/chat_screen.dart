@@ -123,7 +123,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void _onScroll() {
     print("scrolling...");
     if(_scrollController.position.atEdge && !_isDuringChatMessagesFetching) {
-      bool isTop = _scrollController.position.pixels == 0;
+      bool isTop = _scrollController.position.pixels == _scrollController.position.maxScrollExtent;
       if (isTop) {
         setState(() {
           _isDuringChatMessagesFetching = true;
@@ -235,13 +235,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                         return const Column(children: []);
                       } else {
-                        messages.insertAll(0, snapshot.data!);
+                        messages.addAll(snapshot.data!);
                       }
                       return ListView(
-                          controller: _scrollController,
-                          children: messages
-                              .map((m) => ChatMessageItem(m))
-                              .toList()
+                        reverse: true,
+                        controller: _scrollController,
+                        children: messages.map((m) => ChatMessageItem(m)).toList()
                       );
                     }
                   ),
