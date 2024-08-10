@@ -26,7 +26,7 @@ class _SettingScreenState extends State<SettingScreen> {
               const Icon(
                 Icons.language,
                 color: Colors.black,
-                size: 40.0,
+                size: 30.0,
               ),
                const SizedBox(width: 20),
                DropdownButton<Locale>(

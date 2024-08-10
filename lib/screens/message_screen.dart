@@ -136,6 +136,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   }
 
                   final List users = result.data?['users'] ?? [];
+                  print(users);
 
                   return Column(
                     children: <Widget>[

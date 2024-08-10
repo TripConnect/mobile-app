@@ -3,6 +3,7 @@ import 'package:mobile_app/models/user.dart';
 
 // application constants
 const baseURL = 'http://10.0.2.2:3107';
+const graphqlServer = '$baseURL/graphql';
 const appBarBackgroundColor = Colors.transparent;
 const paddingMedium = 20.0;
 
