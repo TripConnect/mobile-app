@@ -97,8 +97,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<ChatMessage> messages = [];
-  bool _isFetchingChatMessages = false;
-  bool _isReadySendMessage = false;
+  bool _isDuringChatMessagesFetching = false;
   int _currentChatHistoryPageNum = 1;
   final int pageSize = 100;
 
@@ -117,18 +116,17 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _onMessageChange() {
-    setState(() {
-      _isReadySendMessage = _messageController.text.isNotEmpty;
-    });
+    // do something
+    setState(() {});
   }
 
   void _onScroll() {
     print("scrolling...");
-    if(_scrollController.position.atEdge && !_isFetchingChatMessages) {
+    if(_scrollController.position.atEdge && !_isDuringChatMessagesFetching) {
       bool isTop = _scrollController.position.pixels == 0;
       if (isTop) {
         setState(() {
-          _isFetchingChatMessages = true;
+          _isDuringChatMessagesFetching = true;
           _currentChatHistoryPageNum++;
         });
       }
@@ -151,7 +149,7 @@ class _ChatScreenState extends State<ChatScreen> {
     //     .toList();
 
     await Future.delayed(const Duration(seconds: 2));
-    _isFetchingChatMessages = false;
+    _isDuringChatMessagesFetching = false;
     return List.generate(pageSize, (index) => ChatMessage(
       id: '',
       content: 'fake content page=$_currentChatHistoryPageNum index=$index',
@@ -255,7 +253,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     enabledBorder: transparentBorderStyle,
                     focusedBorder: transparentBorderStyle,
                     hintText: AppLocalizations.of(context)!.message,
-                    suffixIcon: _isReadySendMessage ?
+                    suffixIcon: _messageController.text.isNotEmpty ?
                       GestureDetector(
                         onTap: () {
                           print("send: ${_messageController.text}");
