@@ -24,9 +24,9 @@ const conversationSummaryQuery = r"""
 """;
 
 const chatHistoryQuery = r"""
-  query Conversation($id: String!, $page: Int, $limit: Int) {
+  query Conversation($id: String!, $messagePage: Int, $messageLimit: Int) {
     conversation(id: $id) {
-      messages(page: $page, limit: $limit) {
+      messages(messagePage: $messagePage, messageLimit: $messageLimit) {
         id
         messageContent
         fromUser {
@@ -100,6 +100,7 @@ class _ChatScreenState extends State<ChatScreen> {
   IO.Socket? _socket;
   List<ChatMessage> messages = [];
   bool _isDuringChatMessagesFetching = false;
+  bool _isReachOldestPage = false;
   int _currentChatHistoryPageNum = 1;
   final int pageSize = 100;
 
@@ -152,8 +153,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _onScroll() {
-    print("scrolling...");
-    if(_scrollController.position.atEdge && !_isDuringChatMessagesFetching) {
+    if(_isReachOldestPage) return;
+    if(_isDuringChatMessagesFetching) return;
+
+    if(_scrollController.position.atEdge) {
       bool isTop = _scrollController.position.pixels == _scrollController.position.maxScrollExtent;
       if (isTop) {
         setState(() {
@@ -165,27 +168,30 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<List<ChatMessage>> _fetchChatHistory(GraphQLClient gqlClient) async {
-    // var result = await gqlClient.query(
-    //   QueryOptions(
-    //     document: gql(chatHistoryQuery),
-    //     variables: {
-    //       'id': widget._conversationId,
-    //       'page': _currentChatHistoryPageNum,
-    //       'limit': pageSize
-    //     },
-    //   ),
-    // );
-    // return (result.data?["conversation"]["messages"] as List)
-    //     .map((m) => ChatMessage.fromJson(m))
-    //     .toList();
-
-    await Future.delayed(const Duration(seconds: 2));
+    var result = await gqlClient.query(
+      QueryOptions(
+        document: gql(chatHistoryQuery),
+        variables: {
+          'id': widget._conversationId,
+          'messagePage': _currentChatHistoryPageNum,
+          'messageLimit': pageSize
+        },
+      ),
+    );
     _isDuringChatMessagesFetching = false;
-    return List.generate(pageSize, (index) => ChatMessage(
-      id: '',
-      content: 'fake content page=$_currentChatHistoryPageNum index=$index',
-      sender: defaultUser
-    ));
+    List<ChatMessage> response = (result.data?["conversation"]["messages"] as List)
+        .map((m) => ChatMessage.fromJson(m))
+        .toList();
+    if(response.isEmpty) _isReachOldestPage = true;
+    return response;
+
+    // await Future.delayed(const Duration(seconds: 2));
+    // _isDuringChatMessagesFetching = false;
+    // return List.generate(pageSize, (index) => ChatMessage(
+    //   id: '',
+    //   content: 'fake content page=$_currentChatHistoryPageNum index=$index',
+    //   sender: defaultUser
+    // ));
   }
 
   @override
@@ -267,11 +273,8 @@ class _ChatScreenState extends State<ChatScreen> {
                         }
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Column(children: []);
-                      } else {
-                        messages.addAll(snapshot.data!);
                       }
+                      messages.addAll(snapshot.data!);
                       return ListView(
                         reverse: true,
                         controller: _scrollController,
