@@ -7,9 +7,9 @@ import 'package:mobile_app/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-const signInMutation = """
-  mutation SignIn(\$username: String!, \$password: String!) {
-    signin(username: \$username, password: \$password) {
+const signInMutation = r"""
+  mutation SignIn($username: String!, $password: String!) {
+    signin(username: $username, password: $password) {
       userInfo {
         id
         displayName

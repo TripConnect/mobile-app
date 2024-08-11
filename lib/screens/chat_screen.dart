@@ -98,9 +98,10 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   IO.Socket? _socket;
-  List<ChatMessage> messages = [];
+  List<ChatMessage> _messages = [];
   bool _isDuringChatMessagesFetching = false;
   bool _isReachOldestPage = false;
+  bool _shouldShowScrollButton = false;
   int _currentChatHistoryPageNum = 1;
   final int pageSize = 100;
 
@@ -130,7 +131,15 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     _socket?.on('message', (data) {
-      print('received $data');
+      if(_scrollController.position.atEdge && _scrollController.position.pixels == 0) {
+        setState(() {
+          _currentChatHistoryPageNum = 1; // reset page when receive message
+        });
+      } else {
+        setState(() {
+          _shouldShowScrollButton = true;
+        });
+      }
     });
   }
 
@@ -164,6 +173,18 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     }
+  }
+
+  void _resetMessagePagination() {
+    _scrollController.animateTo(
+      _scrollController.position.minScrollExtent,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    setState(() {
+      _currentChatHistoryPageNum = 1;
+      _shouldShowScrollButton = false;
+    });
   }
 
   Future<List<ChatMessage>> _fetchMoreChatHistory(GraphQLClient gqlClient) async {
@@ -260,29 +281,53 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Expanded(
-                  child: FutureBuilder<List<ChatMessage>>(
-                    future: _fetchMoreChatHistory(globalStorage.gqlClient.value),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        if(messages.isEmpty) {
-                          return Center(
-                            child: LoadingAnimationWidget.twistingDots(
-                              leftDotColor: const Color(0xFF1A1A3F),
-                              rightDotColor: const Color(0xFFEA3799),
-                              size: 50,
-                            ),
+                  child: Stack(
+                    children: [
+                      FutureBuilder<List<ChatMessage>>(
+                        future: _fetchMoreChatHistory(globalStorage.gqlClient.value),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            if(_messages.isEmpty) {
+                              return Center(
+                                child: LoadingAnimationWidget.twistingDots(
+                                  leftDotColor: const Color(0xFF1A1A3F),
+                                  rightDotColor: const Color(0xFFEA3799),
+                                  size: 50,
+                                ),
+                              );
+                            }
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text('Error: ${snapshot.error}'));
+                          }
+                          _messages.addAll(snapshot.data!);
+                          return ListView(
+                            reverse: true,
+                            controller: _scrollController,
+                            children: _messages.map((m) => ChatMessageItem(m)).toList()
                           );
                         }
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      }
-                      messages.addAll(snapshot.data!);
-                      return ListView(
-                        reverse: true,
-                        controller: _scrollController,
-                        children: messages.map((m) => ChatMessageItem(m)).toList()
-                      );
-                    }
+                      ),
+                      if(_shouldShowScrollButton) GestureDetector(
+                        onTap: () {
+                          _resetMessagePagination();
+                        },
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Container(
+                            padding: const EdgeInsets.all(30.0),
+                            decoration: BoxDecoration(
+                              gradient: const RadialGradient(
+                                colors: [Colors.lightGreenAccent, Colors.white],
+                                center: Alignment.center,
+                                radius: 0.5,
+                              ),
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                            child: const Icon(Icons.arrow_downward),
+                          ),
+                        ),
+                      ),
+                    ]
                   ),
                 ),
                 TextField(
