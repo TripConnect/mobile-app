@@ -160,15 +160,17 @@ class _ChatScreenState extends State<ChatScreen> {
       bool isTop = _scrollController.position.pixels == _scrollController.position.maxScrollExtent;
       if (isTop) {
         setState(() {
-          _isDuringChatMessagesFetching = true;
           _currentChatHistoryPageNum++;
         });
       }
     }
   }
 
-  Future<List<ChatMessage>> _fetchChatHistory(GraphQLClient gqlClient) async {
-    var result = await gqlClient.query(
+  Future<List<ChatMessage>> _fetchMoreChatHistory(GraphQLClient gqlClient) async {
+    if(_isDuringChatMessagesFetching) return [];
+
+    _isDuringChatMessagesFetching = true;
+    QueryResult result = await gqlClient.query(
       QueryOptions(
         document: gql(chatHistoryQuery),
         variables: {
@@ -259,7 +261,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 Expanded(
                   child: FutureBuilder<List<ChatMessage>>(
-                    future: _fetchChatHistory(globalStorage.gqlClient.value),
+                    future: _fetchMoreChatHistory(globalStorage.gqlClient.value),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         if(messages.isEmpty) {
