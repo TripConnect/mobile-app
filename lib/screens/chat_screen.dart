@@ -121,6 +121,20 @@ class _ChatScreenState extends State<ChatScreen> {
     _messageController.dispose();
   }
 
+  void _refreshConversation() {
+    _scrollController.animateTo(
+      _scrollController.position.minScrollExtent,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+    setState(() {
+      _messages = [];
+      _currentChatHistoryPageNum = 1;
+      _isReachOldestPage = false;
+      _shouldShowScrollButton = false;
+    });
+  }
+
   void setupChatSocket(String accessToken) {
     _socket = IO.io(
       socketIOChatNameSpace,
@@ -131,11 +145,12 @@ class _ChatScreenState extends State<ChatScreen> {
     );
 
     _socket?.on('message', (data) {
-      if(_scrollController.position.atEdge && _scrollController.position.pixels == 0) {
-        setState(() {
-          _currentChatHistoryPageNum = 1; // reset page when receive message
-        });
+      print('Incoming message: $data');
+      if(_scrollController.position.pixels == _scrollController.position.minScrollExtent) {
+        print('realtime appear new message');
+        _refreshConversation();
       } else {
+        print('show scroll button then re-fetch when hit');
         setState(() {
           _shouldShowScrollButton = true;
         });
@@ -173,18 +188,6 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     }
-  }
-
-  void _resetMessagePagination() {
-    _scrollController.animateTo(
-      _scrollController.position.minScrollExtent,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-    setState(() {
-      _currentChatHistoryPageNum = 1;
-      _shouldShowScrollButton = false;
-    });
   }
 
   Future<List<ChatMessage>> _fetchMoreChatHistory(GraphQLClient gqlClient) async {
@@ -309,7 +312,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       if(_shouldShowScrollButton) GestureDetector(
                         onTap: () {
-                          _resetMessagePagination();
+                          _refreshConversation();
                         },
                         child: Align(
                           alignment: Alignment.bottomCenter,
