@@ -169,6 +169,7 @@ class _ChatScreenState extends State<ChatScreen> {
     } else {
       print('Socket not connected, cannot send message.');
     }
+    _refreshConversation();
   }
 
   void _onMessageChange() {
@@ -306,7 +307,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           return ListView(
                             reverse: true,
                             controller: _scrollController,
-                            children: _messages.map((m) => ChatMessageItem(m)).toList()
+                            children: _messages.map((m) => ChatMessageItem(m, key: Key(m.id))).toList()
                           );
                         }
                       ),
