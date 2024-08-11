@@ -56,7 +56,7 @@ class ChatMessageItem extends StatelessWidget {
           width: 35,
           height: 35,
           child: isMine ? null : CircleAvatar(
-            backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+            backgroundImage: NetworkImage(message.sender.avatar),
           ),
         ),
         const SizedBox(width: 12),
@@ -252,6 +252,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 .where((m) => m.id != globalStorage.currentUser.id)
                 .map((m) => m.displayName)
                 .join(", ");
+          String conversationAvatar = ConversationType.private == conversation.type ?
+            conversation.members.firstWhere((m) => m.id != globalStorage.currentUser.id).avatar:
+            globalStorage.currentUser.avatar;
 
           return Padding(
             padding: const EdgeInsets.all(paddingMedium),
@@ -268,7 +271,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           width: 50,
                           height: 50,
                           child: CircleAvatar(
-                            backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
+                            backgroundImage: NetworkImage(conversationAvatar),
                           ),
                         ),
                       ),
