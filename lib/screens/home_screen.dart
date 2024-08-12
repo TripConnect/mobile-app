@@ -46,15 +46,15 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
                 backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
               ),
             ),
-            label: AppLocalizations.of(context)!.profile,
+            label: AppLocalizations.of(context)!.profile_screen_title,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.chat),
-            label: AppLocalizations.of(context)!.message,
+            label: AppLocalizations.of(context)!.message_screen_title,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings),
-            label: AppLocalizations.of(context)!.setting,
+            label: AppLocalizations.of(context)!.setting_screen_title,
           ),
         ],
         currentIndex: _selectedIndex,

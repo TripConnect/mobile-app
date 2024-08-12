@@ -9,8 +9,9 @@
   "or_sign_in_with": "Bạn có thể đăng nhập với",
   "signIn": "Đăng nhập",
   "forgot_password_question": "Quên mật khẩu?",
-  "profile": "Hồ sơ",
-  "message": "Tin nhắn...",
-  "setting": "Cài đặt",
+  "profile_screen_title": "Hồ sơ",
+  "message_screen_title": "Tin nhắn...",
+  "setting_screen_title": "Cài đặt",
+  "message_place_holder": "Tin nhắn...",
   "search": "Tìm kiếm"
 }

@@ -343,7 +343,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     border: transparentBorderStyle,
                     enabledBorder: transparentBorderStyle,
                     focusedBorder: transparentBorderStyle,
-                    hintText: AppLocalizations.of(context)!.message,
+                    hintText: AppLocalizations.of(context)!.message_place_holder,
                     suffixIcon: _messageController.text.isNotEmpty ?
                       GestureDetector(
                         onTap: () {
