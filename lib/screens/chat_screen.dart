@@ -3,8 +3,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:mobile_app/constants/common.dart';
 import 'package:mobile_app/models/chat.dart';
 import 'package:mobile_app/models/storage.dart';
+import 'package:mobile_app/models/user.dart';
 import 'package:provider/provider.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -50,14 +50,17 @@ class ChatMessageItem extends StatelessWidget {
     bool isMine = message.sender.id == globalStorage.currentUser.id;
 
     return Row(
-      mainAxisAlignment: isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
+      mainAxisAlignment:
+          isMine ? MainAxisAlignment.end : MainAxisAlignment.start,
       children: <Widget>[
         SizedBox(
           width: 35,
           height: 35,
-          child: isMine ? null : CircleAvatar(
-            backgroundImage: NetworkImage(message.sender.avatar),
-          ),
+          child: isMine
+              ? null
+              : CircleAvatar(
+                  backgroundImage: NetworkImage(message.sender.avatar),
+                ),
         ),
         const SizedBox(width: 12),
         Container(
@@ -70,11 +73,10 @@ class ChatMessageItem extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              if(!isMine)
-                Text(
-                  message.sender.displayName,
-                  style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)
-                ),
+              if (!isMine)
+                Text(message.sender.displayName,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w800, fontSize: 14)),
               Text(message.content),
             ],
           ),
@@ -82,7 +84,6 @@ class ChatMessageItem extends StatelessWidget {
       ],
     );
   }
-
 }
 
 class ChatScreen extends StatefulWidget {
@@ -98,6 +99,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   IO.Socket? _socket;
+  String _conversationTitle = "Loading...";
+  String _conversationAvatar = defaultUserAvatar;
   List<ChatMessage> _messages = [];
   bool _isDuringChatMessagesFetching = false;
   bool _isReachOldestPage = false;
@@ -108,6 +111,55 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+
+    _initChatSocket();
+
+    // Initial conversation common values
+    _fetchConversation()
+      .then((Conversation conversation) {
+        UserInfo currentUser = context.read<GlobalStorage>().currentUser;
+
+        String conversationTitle = conversation.name.isNotEmpty
+          ? conversation.name
+          : conversation.members
+            .where((m) => m.id != currentUser.id)
+            .map((m) => m.displayName)
+            .join(", ");
+
+        String conversationAvatar = ConversationType.private == conversation.type
+          ? conversation.members
+            .firstWhere((m) => m.id != currentUser.id)
+            .avatar
+          : currentUser.avatar;
+
+        setState(() {
+          _conversationTitle = conversationTitle;
+          _conversationAvatar = conversationAvatar;
+        });
+      })
+      .catchError((error) {
+        print('initial conversation failed: $error.');
+        setState(() {
+          _conversationTitle = 'Unknown';
+          _conversationAvatar = defaultUserAvatar;
+        });
+      });
+
+    // Initial chat history
+    _fetchMoreChatHistory(1)
+      .then((List<ChatMessage> initialMessages) {
+        setState(() {
+          _messages = initialMessages;
+        });
+      })
+      .catchError((error) {
+        print('initial chat history failed: $error.');
+        setState(() {
+          _messages = [];
+        });
+      });
+
+    // hydrate events
     _messageController.addListener(_onMessageChange);
     _scrollController.addListener(_onScroll);
   }
@@ -127,26 +179,32 @@ class _ChatScreenState extends State<ChatScreen> {
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeInOut,
     );
-    setState(() {
-      _messages = [];
-      _currentChatHistoryPageNum = 1;
-      _isReachOldestPage = false;
-      _shouldShowScrollButton = false;
-    });
+    _fetchMoreChatHistory(1)
+      .then((List<ChatMessage> messages) {
+        setState(() {
+          _messages = messages;
+          _currentChatHistoryPageNum = 1;
+          _isReachOldestPage = false;
+          _shouldShowScrollButton = false;
+        });
+      });
   }
 
-  void setupChatSocket(String accessToken) {
+  void _initChatSocket() {
+    Token token = context.read<GlobalStorage>().token!;
+
     _socket = IO.io(
       socketIOChatNameSpace,
       IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .setAuth({'token': accessToken})
-          .build(),
+        .setTransports(['websocket'])
+        .setAuth({'token': token.accessToken})
+        .build(),
     );
 
     _socket?.on('message', (data) {
       print('Incoming message: $data');
-      if(_scrollController.position.pixels == _scrollController.position.minScrollExtent) {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.minScrollExtent) {
         print('realtime appear new message');
         _refreshConversation();
       } else {
@@ -164,12 +222,13 @@ class _ChatScreenState extends State<ChatScreen> {
       'content': content
     };
     if (_socket?.connected == true) {
-      _socket?.emit('message', payload);
-      print('sent: $payload');
+      _socket?.emitWithAck('message', payload, ack: (Map<String, dynamic> response) {
+        _refreshConversation();
+        print('(${response["status"]}) sent: $payload');
+      });
     } else {
       print('Socket not connected, cannot send message.');
     }
-    _refreshConversation();
   }
 
   void _onMessageChange() {
@@ -178,21 +237,31 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _onScroll() {
-    if(_isReachOldestPage) return;
-    if(_isDuringChatMessagesFetching) return;
+    if (_isReachOldestPage) return;
+    if (_isDuringChatMessagesFetching) return;
 
-    if(_scrollController.position.atEdge) {
-      bool isTop = _scrollController.position.pixels == _scrollController.position.maxScrollExtent;
+    final ScrollPosition currentScrollPos = _scrollController.position;
+    if (currentScrollPos.atEdge) {
+      bool isTop = currentScrollPos.pixels == currentScrollPos.maxScrollExtent;
       if (isTop) {
-        setState(() {
-          _currentChatHistoryPageNum++;
-        });
+        int nextPageNum = _currentChatHistoryPageNum + 1;
+        _fetchMoreChatHistory(nextPageNum)
+          .then((List<ChatMessage> messages) {
+            if(messages.isEmpty) {
+              _isReachOldestPage = true;
+              return;
+            }
+            _messages.addAll(messages);
+            setState(() {
+              _currentChatHistoryPageNum = nextPageNum;
+            });
+          });
       }
     }
   }
 
-  Future<List<ChatMessage>> _fetchMoreChatHistory(GraphQLClient gqlClient) async {
-    if(_isDuringChatMessagesFetching) return [];
+  Future<List<ChatMessage>> _fetchMoreChatHistory(int pageNum) async {
+    final gqlClient = context.read<GlobalStorage>().gqlClient.value;
 
     _isDuringChatMessagesFetching = true;
     QueryResult result = await gqlClient.query(
@@ -200,16 +269,19 @@ class _ChatScreenState extends State<ChatScreen> {
         document: gql(chatHistoryQuery),
         variables: {
           'id': widget._conversationId,
-          'messagePage': _currentChatHistoryPageNum,
+          'messagePage': pageNum,
           'messageLimit': pageSize
         },
       ),
     );
     _isDuringChatMessagesFetching = false;
-    List<ChatMessage> response = (result.data?["conversation"]["messages"] as List)
-        .map((m) => ChatMessage.fromJson(m))
-        .toList();
-    if(response.isEmpty) _isReachOldestPage = true;
+
+    List<ChatMessage> response =
+        (result.data?["conversation"]["messages"] as List)
+            .map((m) => ChatMessage.fromJson(m))
+            .toList();
+    if (response.isEmpty) _isReachOldestPage = true;
+
     return response;
 
     // await Future.delayed(const Duration(seconds: 2));
@@ -221,145 +293,104 @@ class _ChatScreenState extends State<ChatScreen> {
     // ));
   }
 
+  Future<Conversation> _fetchConversation() async {
+    // TODO: final gqlClient = GraphQLProvider.of(context).value;
+    final gqlClient = context.read<GlobalStorage>().gqlClient.value;
+    QueryResult result = await gqlClient.query(
+      QueryOptions(
+        document: gql(conversationSummaryQuery),
+        variables: {'id': widget._conversationId},
+      )
+    );
+    Conversation conversation = Conversation.fromJson(result.data!['conversation']);
+    return conversation;
+  }
+
   @override
   Widget build(BuildContext context) {
-    var globalStorage = Provider.of<GlobalStorage>(context);
-
-    if(_socket == null) {
-      setupChatSocket(globalStorage.token!.accessToken);
-    }
+    GlobalStorage globalStorage = Provider.of<GlobalStorage>(context);
 
     return Scaffold(
-      body: Query(
-        options: QueryOptions(
-          document: gql(conversationSummaryQuery),
-          variables: {'id': widget._conversationId},
-        ),
-        builder: (QueryResult result, { VoidCallback? refetch, FetchMore? fetchMore }) {
-          if (result.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (result.hasException) {
-            return Center(child: Text(result.exception.toString()));
-          }
-
-          Conversation conversation = Conversation.fromJson(result.data?["conversation"]);
-
-          String title = conversation.name.isNotEmpty ?
-              conversation.name :
-              conversation.members
-                .where((m) => m.id != globalStorage.currentUser.id)
-                .map((m) => m.displayName)
-                .join(", ");
-          String conversationAvatar = ConversationType.private == conversation.type ?
-            conversation.members.firstWhere((m) => m.id != globalStorage.currentUser.id).avatar:
-            globalStorage.currentUser.avatar;
-
-          return Padding(
-            padding: const EdgeInsets.all(paddingMedium),
-            child: Column(
-              children: <Widget>[
-                Container(
-                  margin: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        flex: 1,
-                        child: SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: CircleAvatar(
-                            backgroundImage: NetworkImage(conversationAvatar),
-                          ),
-                        ),
+      body: Padding(
+        padding: const EdgeInsets.all(paddingMedium),
+        child: Column(
+          children: <Widget>[
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Flexible(
+                    flex: 1,
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(_conversationAvatar),
                       ),
-                      const SizedBox(width: 20),
-                      Flexible(
-                        flex: 5,
-                        child: Text(
-                          title,
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Flexible(
+                      flex: 5,
+                      child: Text(_conversationTitle,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 25)
-                        )
-                      )
-                    ],
+                          style: const TextStyle(fontSize: 25)))
+                ],
+              ),
+            ),
+            Expanded(
+              child: Stack(
+                children: <Widget>[
+                  ListView(
+                    reverse: true,
+                    controller: _scrollController,
+                    children: _messages
+                      .map((m) => ChatMessageItem(m, key: Key(m.id)))
+                      .toList()
                   ),
-                ),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      FutureBuilder<List<ChatMessage>>(
-                        future: _fetchMoreChatHistory(globalStorage.gqlClient.value),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState == ConnectionState.waiting) {
-                            if(_messages.isEmpty) {
-                              return Center(
-                                child: LoadingAnimationWidget.twistingDots(
-                                  leftDotColor: const Color(0xFF1A1A3F),
-                                  rightDotColor: const Color(0xFFEA3799),
-                                  size: 50,
-                                ),
-                              );
-                            }
-                          } else if (snapshot.hasError) {
-                            return Center(child: Text('Error: ${snapshot.error}'));
-                          }
-                          _messages.addAll(snapshot.data!);
-                          return ListView(
-                            reverse: true,
-                            controller: _scrollController,
-                            children: _messages.map((m) => ChatMessageItem(m, key: Key(m.id))).toList()
-                          );
-                        }
-                      ),
-                      if(_shouldShowScrollButton) GestureDetector(
-                        onTap: () {
-                          _refreshConversation();
-                        },
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            padding: const EdgeInsets.all(30.0),
-                            decoration: BoxDecoration(
-                              gradient: const RadialGradient(
-                                colors: [Colors.lightGreenAccent, Colors.white],
-                                center: Alignment.center,
-                                radius: 0.5,
-                              ),
-                              borderRadius: BorderRadius.circular(50),
+                  if (_shouldShowScrollButton)
+                    GestureDetector(
+                      onTap: _refreshConversation,
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          padding: const EdgeInsets.all(30.0),
+                          decoration: BoxDecoration(
+                            gradient: const RadialGradient(
+                              colors: [Colors.lightGreenAccent, Colors.white],
+                              center: Alignment.center,
+                              radius: 0.5,
                             ),
-                            child: const Icon(Icons.arrow_downward),
+                            borderRadius: BorderRadius.circular(50),
                           ),
+                          child: const Icon(Icons.arrow_downward),
                         ),
                       ),
-                    ]
-                  ),
-                ),
-                TextField(
-                  controller: _messageController,
-                  decoration: InputDecoration(
-                    border: transparentBorderStyle,
-                    enabledBorder: transparentBorderStyle,
-                    focusedBorder: transparentBorderStyle,
-                    hintText: AppLocalizations.of(context)!.message_place_holder,
-                    suffixIcon: _messageController.text.isNotEmpty ?
-                      GestureDetector(
-                        onTap: () {
-                          _sendChatMessage(widget._conversationId, _messageController.text);
-                          _messageController.text = '';
-                        },
-                        child: const Icon(Icons.send, color: Colors.blue)
-                      ) : null
-                  ),
-                ),
-              ],
+                    ),
+                ]
+              ),
             ),
-          );
-        }
+            TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                border: transparentBorderStyle,
+                enabledBorder: transparentBorderStyle,
+                focusedBorder: transparentBorderStyle,
+                hintText: AppLocalizations.of(context)!.message_place_holder,
+                suffixIcon: _messageController.text.isNotEmpty ?
+                  GestureDetector(
+                    onTap: () {
+                      _sendChatMessage(widget._conversationId, _messageController.text);
+                      _messageController.text = '';
+                    },
+                    child: const Icon(Icons.send, color: Colors.blue)
+                  ) : null
+              ),
+            ),
+          ],
+        ),
       )
     );
   }
-
 }
