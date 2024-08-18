@@ -37,11 +37,12 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.black87,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: SizedBox(
-              width: 40,
-              height: 40,
+              width: 35,
+              height: 35,
               child: CircleAvatar(
                 backgroundImage: NetworkImage(globalStorage.currentUser.avatar),
               ),
@@ -49,16 +50,17 @@ class _AuthenticatedApplicationState extends State<HomeScreen> {
             label: AppLocalizations.of(context)!.profile_screen_title,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.chat),
+            icon: const Icon(Icons.chat_outlined),
             label: AppLocalizations.of(context)!.message_screen_title,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.settings_outlined),
             label: AppLocalizations.of(context)!.setting_screen_title,
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.teal,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.white38,
         onTap: _onItemTapped,
       ),
     );
