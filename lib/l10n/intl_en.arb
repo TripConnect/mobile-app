@@ -9,8 +9,9 @@
     "or_sign_in_with": "Or sign in with",
     "signIn": "Sign In",
     "forgot_password_question": "Forgot password?",
-    "profile": "Profile",
-    "message": "Message",
-    "setting": "Setting",
+    "profile_screen_title": "Profile",
+    "message_screen_title": "Message",
+    "setting_screen_title": "Setting",
+    "message_place_holder": "Message...",
     "search": "Search"
 }

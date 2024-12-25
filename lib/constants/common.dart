@@ -3,6 +3,8 @@ import 'package:mobile_app/models/user.dart';
 
 // application constants
 const baseURL = 'http://10.0.2.2:3107';
+const graphqlServer = '$baseURL/graphql';
+const socketIOChatNameSpace = '$baseURL/chat';
 const appBarBackgroundColor = Colors.transparent;
 const paddingMedium = 20.0;
 
@@ -23,6 +25,7 @@ const googleLogoURL = 'assets/images/google-logo.png';
 const transparentBorderStyle = OutlineInputBorder(
   borderSide: BorderSide(color: Colors.transparent),
 );
+const conversationTitleMaxLength = 20;
 
 // Enum definitions
 enum Language {
@@ -41,4 +44,11 @@ enum ConversationType {
   final String code;
 
   const ConversationType(this.code);
+
+  static ConversationType valueOf(String text) {
+    for(ConversationType type in values) {
+      if(type.code == text) return type;
+    }
+    throw Exception('Incorrect value: $text');
+  }
 }

@@ -7,9 +7,9 @@ import 'package:mobile_app/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-const signInMutation = """
-  mutation SignIn(\$username: String!, \$password: String!) {
-    signin(username: \$username, password: \$password) {
+const signInMutation = r"""
+  mutation SignIn($username: String!, $password: String!) {
+    signin(username: $username, password: $password) {
       userInfo {
         id
         displayName
@@ -33,8 +33,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _username = '';
-  String _password = '';
+  String _username = 'sadboy1999';
+  String _password = '123456789';
 
   _signInWithGoogle() {
     print("Feature not implemented");
@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           if(resultData != null) {
                             final signInData = SignInResponse.fromJson(resultData['signin']);
                             globalStorage.updateCurrentUser(signInData.userInfo);
-                            globalStorage.updateGQLClient(signInData.token.accessToken);
+                            globalStorage.updateGQLClient(signInData.token);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -227,7 +227,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text(AppLocalizations.of(context)!.do_not_have_account_question),
                         TextButton(
                             onPressed: (){},
-                            child: Text(AppLocalizations.of(context)!.register_now, style: TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
+                            child: Text(AppLocalizations.of(context)!.register_now, style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.w700))
                         ),
                       ],
                     ),
