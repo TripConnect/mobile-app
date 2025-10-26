@@ -191,13 +191,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _initChatSocket() {
-    Token token = context.read<GlobalStorage>().token!;
 
     _socket = IO.io(
       socketIOChatNameSpace,
       IO.OptionBuilder()
         .setTransports(['websocket'])
-        .setAuth({'token': token.accessToken})
         .build(),
     );
 

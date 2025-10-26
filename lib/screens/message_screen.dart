@@ -20,8 +20,8 @@ const searchUsersQuery = r"""
 """;
 
 const createConversationMutation = r"""
-  mutation CreateConversation($type: String!, $members: String!) {
-    createConversation(type: $type, members: $members) {
+  mutation CreateConversation($memberIds: [String!]!) {
+    createConversation(type: PRIVATE, memberIds: $memberIds) {
       id
     }
   }
@@ -61,8 +61,7 @@ class _SearchResultUser extends StatelessWidget {
             MutationOptions(
               document: gql(createConversationMutation),
               variables: {
-                'type': ConversationType.private.code,
-                'members': [globalStorage.currentUser.id, userInfo.id].join(",")
+                'memberIds': [globalStorage.currentUser.id, userInfo.id]
               },
             )
         );

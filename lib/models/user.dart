@@ -25,36 +25,16 @@ class UserInfo {
   }
 }
 
-class Token {
-  final String accessToken;
-  final String refreshToken;
-
-  Token({
-    required this.accessToken,
-    required this.refreshToken,
-  });
-
-  factory Token.fromJson(Map<String, dynamic> json) {
-    return Token(
-      accessToken: json['accessToken'],
-      refreshToken: json['refreshToken'] ?? '',
-    );
-  }
-}
-
 class SignInResponse {
   final UserInfo userInfo;
-  final Token token;
 
   SignInResponse({
     required this.userInfo,
-    required this.token,
   });
 
   factory SignInResponse.fromJson(Map<String, dynamic> json) {
     return SignInResponse(
       userInfo: UserInfo.fromJson(json['userInfo']),
-      token: Token.fromJson(json['token']),
     );
   }
 }

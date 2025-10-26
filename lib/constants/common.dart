@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_app/models/user.dart';
 
 // application constants
-const baseURL = 'http://10.0.2.2:3107';
+const baseURL = 'http://10.0.2.2:31071';
 const graphqlServer = '$baseURL/graphql';
 const socketIOChatNameSpace = '$baseURL/chat';
 const appBarBackgroundColor = Colors.transparent;

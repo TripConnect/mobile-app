@@ -9,15 +9,11 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const signInMutation = r"""
   mutation SignIn($username: String!, $password: String!) {
-    signin(username: $username, password: $password) {
+    signIn(username: $username, password: $password) {
       userInfo {
         id
         displayName
         avatar
-      }
-      token {
-        accessToken
-        refreshToken
       }
     }
   }
@@ -33,8 +29,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _username = 'sadboy1999';
-  String _password = '123456789';
+  String _username = 'ndtrong';
+  String _password = 'ndtrong@1234';
 
   _signInWithGoogle() {
     print("Feature not implemented");
@@ -131,9 +127,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         document: gql(signInMutation),
                         onCompleted: (dynamic resultData) {
                           if(resultData != null) {
-                            final signInData = SignInResponse.fromJson(resultData['signin']);
+                            final signInData = SignInResponse.fromJson(resultData['signIn']);
                             globalStorage.updateCurrentUser(signInData.userInfo);
-                            globalStorage.updateGQLClient(signInData.token);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
