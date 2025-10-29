@@ -3,7 +3,7 @@ import 'package:mobile_app/models/user.dart';
 
 // application constants
 const baseURL = 'http://10.0.2.2:31071';
-const graphqlServer = '$baseURL/graphql';
+const gqlEndpoint = '$baseURL/graphql';
 const socketIOChatNameSpace = '$baseURL/chat';
 const appBarBackgroundColor = Colors.transparent;
 const paddingMedium = 20.0;
